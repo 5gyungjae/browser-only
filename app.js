@@ -1,7 +1,9 @@
 const refreshButton = document.querySelector("#refreshButton");
 const cards = document.querySelector("#cards");
 const cardTemplate = document.querySelector("#cardTemplate");
+const toast = document.querySelector("#toast");
 let currentPicks = [];
+let toastTimer = null;
 
 function colorClass(number) {
   if (number <= 10) return "range-1";
@@ -60,20 +62,57 @@ function pickText(numbers) {
   return numbers.join(", ");
 }
 
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.add("is-visible");
+
+  if (toastTimer) {
+    window.clearTimeout(toastTimer);
+  }
+
+  toastTimer = window.setTimeout(() => {
+    toast.classList.remove("is-visible");
+  }, 1800);
+}
+
+function legacyCopyText(text) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.setAttribute("readonly", "");
+  textArea.style.position = "fixed";
+  textArea.style.top = "-9999px";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  const success = document.execCommand("copy");
+  document.body.removeChild(textArea);
+
+  if (!success) {
+    throw new Error("legacy copy failed");
+  }
+}
+
 async function copyText(text) {
-  await navigator.clipboard.writeText(text);
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  legacyCopyText(text);
 }
 
 async function shareNumbers(numbers) {
   const shareUrl = window.location.href;
   const shareText = `로또번호추천\n${pickText(numbers)}`;
+  const payload = {
+    title: "로또번호추천",
+    text: shareText,
+    url: shareUrl,
+  };
 
-  if (navigator.share) {
-    await navigator.share({
-      title: "로또번호추천",
-      text: shareText,
-      url: shareUrl,
-    });
+  if (navigator.share && (!navigator.canShare || navigator.canShare(payload))) {
+    await navigator.share(payload);
     return;
   }
 
@@ -98,14 +137,18 @@ function renderCards(items) {
     fragment.querySelector(".card-copy").addEventListener("click", async () => {
       try {
         await copyText(pickText(numbers));
+        showToast("번호를 복사했어요");
       } catch (error) {
+        showToast("복사에 실패했어요");
       }
     });
 
     fragment.querySelector(".card-share").addEventListener("click", async () => {
       try {
         await shareNumbers(numbers);
+        showToast("번호를 공유했어요");
       } catch (error) {
+        showToast("공유를 취소했거나 실패했어요");
       }
     });
 
@@ -123,6 +166,7 @@ function regenerate() {
     updateUrl(picks);
     renderCards(picks);
     refreshButton.disabled = false;
+    showToast("새 번호를 만들었어요");
   });
 }
 
