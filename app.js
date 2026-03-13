@@ -62,6 +62,14 @@ function pickText(numbers) {
   return numbers.join(", ");
 }
 
+function shareMessage(numbers) {
+  return [
+    "추천하는 로또번호입니다!",
+    pickText(numbers),
+    "로또 번호는 https://lotto.twistcompany.co.kr",
+  ].join("\n");
+}
+
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add("is-visible");
@@ -104,7 +112,7 @@ async function copyText(text) {
 
 async function shareNumbers(numbers) {
   const shareUrl = window.location.href;
-  const shareText = `로또번호추천\n${pickText(numbers)}`;
+  const shareText = shareMessage(numbers);
   const payload = {
     title: "로또번호추천",
     text: shareText,
@@ -136,7 +144,7 @@ function renderCards(items) {
 
     fragment.querySelector(".card-copy").addEventListener("click", async () => {
       try {
-        await copyText(pickText(numbers));
+        await copyText(shareMessage(numbers));
         showToast("번호를 복사했어요");
       } catch (error) {
         showToast("복사에 실패했어요");
