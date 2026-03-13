@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>로또번호추천</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb bg-orb-left"></div>
+    <div class="bg-orb bg-orb-right"></div>
+
+    <main class="page">
+      <section class="hero">
+        <div class="hero-copy">
+          <h1>로또번호추천</h1>
+          <p class="intro">
+            브라우저 안에서만 번호를 만들고 다시 뽑습니다.
+          </p>
+        </div>
+
+        <div class="hero-side">
+          <div class="hero-badge">
+            <span class="hero-badge-label">생성 상태</span>
+            <strong id="statusText">준비됨</strong>
+          </div>
+          <button id="refreshButton" type="button">번호 다시 만들기</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <p class="section-kicker">Random 5 Picks</p>
+          <h2>추천 번호</h2>
+        </div>
+        <div id="cards" class="cards"></div>
+      </section>
+    </main>
+
+    <template id="cardTemplate">
+      <article class="card">
+        <div class="card-head">
+          <span class="rank"></span>
+        </div>
+        <div class="balls"></div>
+      </article>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
