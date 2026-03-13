@@ -80,7 +80,7 @@ function showToast(message) {
 
   toastTimer = window.setTimeout(() => {
     toast.classList.remove("is-visible");
-  }, 1800);
+  }, 1400);
 }
 
 function legacyCopyText(text) {
@@ -145,7 +145,7 @@ function renderCards(items) {
     fragment.querySelector(".card-copy").addEventListener("click", async () => {
       try {
         await copyText(shareMessage(numbers));
-        showToast("번호를 복사했어요");
+        showToast("복사되었습니다.");
       } catch (error) {
         showToast("복사에 실패했어요");
       }
@@ -154,7 +154,7 @@ function renderCards(items) {
     fragment.querySelector(".card-share").addEventListener("click", async () => {
       try {
         await shareNumbers(numbers);
-        showToast("번호를 공유했어요");
+        showToast("공유되었습니다.");
       } catch (error) {
         showToast("공유를 취소했거나 실패했어요");
       }
@@ -174,7 +174,7 @@ function regenerate() {
     updateUrl(picks);
     renderCards(picks);
     refreshButton.disabled = false;
-    showToast("새 번호를 만들었어요");
+    showToast("새 번호가 생성되었습니다.");
   });
 }
 
