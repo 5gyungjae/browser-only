@@ -1,7 +1,7 @@
 const refreshButton = document.querySelector("#refreshButton");
-const statusText = document.querySelector("#statusText");
 const cards = document.querySelector("#cards");
 const cardTemplate = document.querySelector("#cardTemplate");
+let currentPicks = [];
 
 function colorClass(number) {
   if (number <= 10) return "range-1";
@@ -28,6 +28,58 @@ function drawFive(pool) {
   return Array.from({ length: 5 }, () => pool[Math.floor(Math.random() * pool.length)]);
 }
 
+function serializePicks(picks) {
+  return picks.map((numbers) => numbers.join(".")).join("-");
+}
+
+function parsePicks(value) {
+  if (!value) return null;
+
+  const groups = value.split("-").filter(Boolean);
+  if (groups.length !== 5) return null;
+
+  const parsed = groups.map((group) =>
+    group
+      .split(".")
+      .map((number) => Number.parseInt(number, 10))
+      .filter((number) => Number.isInteger(number) && number >= 1 && number <= 45)
+      .sort((a, b) => a - b),
+  );
+
+  const isValid = parsed.every((numbers) => numbers.length === 6);
+  return isValid ? parsed : null;
+}
+
+function updateUrl(picks) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("picks", serializePicks(picks));
+  window.history.replaceState({}, "", url);
+}
+
+function pickText(numbers) {
+  return numbers.join(", ");
+}
+
+async function copyText(text) {
+  await navigator.clipboard.writeText(text);
+}
+
+async function shareNumbers(numbers) {
+  const shareUrl = window.location.href;
+  const shareText = `로또번호추천\n${pickText(numbers)}`;
+
+  if (navigator.share) {
+    await navigator.share({
+      title: "로또번호추천",
+      text: shareText,
+      url: shareUrl,
+    });
+    return;
+  }
+
+  await copyText(`${shareText}\n${shareUrl}`);
+}
+
 function renderCards(items) {
   cards.replaceChildren();
 
@@ -43,22 +95,43 @@ function renderCards(items) {
       balls.appendChild(ball);
     });
 
+    fragment.querySelector(".card-copy").addEventListener("click", async () => {
+      try {
+        await copyText(pickText(numbers));
+      } catch (error) {
+      }
+    });
+
+    fragment.querySelector(".card-share").addEventListener("click", async () => {
+      try {
+        await shareNumbers(numbers);
+      } catch (error) {
+      }
+    });
+
     cards.appendChild(fragment);
   });
 }
 
 function regenerate() {
   refreshButton.disabled = true;
-  statusText.textContent = "번호를 만드는 중...";
 
   window.requestAnimationFrame(() => {
     const pool = createPool();
     const picks = drawFive(pool);
+    currentPicks = picks;
+    updateUrl(picks);
     renderCards(picks);
-    statusText.textContent = "새 번호 생성 완료";
     refreshButton.disabled = false;
   });
 }
 
 refreshButton.addEventListener("click", regenerate);
-regenerate();
+
+const initialPicks = parsePicks(new URL(window.location.href).searchParams.get("picks"));
+if (initialPicks) {
+  currentPicks = initialPicks;
+  renderCards(initialPicks);
+} else {
+  regenerate();
+}

@@ -115,27 +115,23 @@ h1 {
   align-content: start;
 }
 
-.hero-badge {
+.link-grid {
   display: grid;
-  gap: 6px;
-  padding: 16px 18px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.14), rgba(255, 255, 255, 0.72));
-  border: 1px solid rgba(15, 118, 110, 0.12);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
-.hero-badge-label,
+.button-group {
+  display: grid;
+  gap: 10px;
+}
+
 .section-kicker {
   color: var(--muted);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-#statusText {
-  font-size: 1.05rem;
-  font-weight: 800;
 }
 
 button {
@@ -155,6 +151,28 @@ button {
 button:disabled {
   opacity: 0.7;
   cursor: wait;
+}
+
+.button-secondary {
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+  border: 1px solid rgba(30, 36, 48, 0.08);
+  box-shadow: none;
+}
+
+.button-link {
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  padding: 0 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.94rem;
+  font-weight: 800;
+  text-align: center;
+  border: 1px solid rgba(30, 36, 48, 0.08);
 }
 
 .panel {
@@ -197,6 +215,13 @@ h2 {
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
   margin-top: 18px;
+}
+
+.card-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .ball {
@@ -242,6 +267,10 @@ h2 {
     padding: 34px;
   }
 
+  .button-group {
+    grid-template-columns: 1fr;
+  }
+
   .panel {
     padding: 28px;
   }
@@ -266,6 +295,10 @@ h2 {
   .panel {
     padding: 18px 14px 14px;
     border-radius: 24px;
+  }
+
+  .link-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   button {
