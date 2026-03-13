@@ -113,15 +113,19 @@ async function copyText(text) {
 async function shareNumbers(numbers) {
   const shareUrl = window.location.href;
   const shareText = shareMessage(numbers);
-  const payload = {
-    title: "로또번호추천",
-    text: shareText,
-    url: shareUrl,
-  };
-
-  if (navigator.share && (!navigator.canShare || navigator.canShare(payload))) {
-    await navigator.share(payload);
-    return;
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: "로또번호추천",
+        text: shareText,
+        url: shareUrl,
+      });
+      return;
+    } catch (error) {
+      if (error && error.name === "AbortError") {
+        throw error;
+      }
+    }
   }
 
   await copyText(`${shareText}\n${shareUrl}`);
