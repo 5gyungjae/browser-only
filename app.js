@@ -1,4 +1,6 @@
 const refreshButton = document.querySelector("#refreshButton");
+const copyAllButton = document.querySelector("#copyAllButton");
+const shareAllButton = document.querySelector("#shareAllButton");
 const cards = document.querySelector("#cards");
 const cardTemplate = document.querySelector("#cardTemplate");
 const toast = document.querySelector("#toast");
@@ -70,6 +72,14 @@ function shareMessage(numbers) {
   ].join("\n");
 }
 
+function allPicksMessage(picks) {
+  return [
+    "추천하는 로또번호입니다!",
+    ...picks.map((numbers, index) => `${index + 1}. ${pickText(numbers)}`),
+    "로또 번호는 https://lotto.twistcompany.co.kr",
+  ].join("\n");
+}
+
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add("is-visible");
@@ -113,6 +123,29 @@ async function copyText(text) {
 async function shareNumbers(numbers) {
   const shareUrl = window.location.href;
   const shareText = shareMessage(numbers);
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: "로또번호추천",
+        text: shareText,
+        url: shareUrl,
+      });
+      return;
+    } catch (error) {
+      if (error && error.name === "AbortError") {
+        throw error;
+      }
+    }
+  }
+
+  await copyText(`${shareText}\n${shareUrl}`);
+}
+
+async function shareAllPicks() {
+  if (!currentPicks.length) return;
+
+  const shareUrl = window.location.href;
+  const shareText = allPicksMessage(currentPicks);
   if (navigator.share) {
     try {
       await navigator.share({
@@ -183,6 +216,23 @@ function regenerate() {
 }
 
 refreshButton.addEventListener("click", regenerate);
+copyAllButton.addEventListener("click", async () => {
+  try {
+    await copyText(allPicksMessage(currentPicks));
+    showToast("전체 번호가 복사되었습니다.");
+  } catch (error) {
+    showToast("복사에 실패했어요");
+  }
+});
+
+shareAllButton.addEventListener("click", async () => {
+  try {
+    await shareAllPicks();
+    showToast("전체 번호가 공유되었습니다.");
+  } catch (error) {
+    showToast("공유를 취소했거나 실패했어요");
+  }
+});
 
 const initialPicks = parsePicks(new URL(window.location.href).searchParams.get("picks"));
 if (initialPicks) {

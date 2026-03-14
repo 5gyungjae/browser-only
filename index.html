@@ -15,7 +15,7 @@
         <div class="hero-copy">
           <h1>로또번호추천</h1>
           <p class="intro">
-            브라우저 안에서만 번호를 만들고 다시 뽑습니다.
+            가장 많이 나온 숫자 조합 후 랜덤으로 5개 보여줍니다.
           </p>
         </div>
 
@@ -36,8 +36,30 @@
 
       <section class="panel">
         <div class="panel-head">
-          <p class="section-kicker">Random 5 Picks</p>
-          <h2>추천 번호</h2>
+          <div>
+            <p class="section-kicker">Random 5 Picks</p>
+            <h2>추천 번호</h2>
+          </div>
+          <div class="panel-actions">
+            <button id="copyAllButton" type="button" class="button-secondary icon-button">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M9 9h10v11H9z"></path>
+                  <path d="M5 5h10v2H7v8H5z"></path>
+                </svg>
+              </span>
+              <span>전체 복사</span>
+            </button>
+            <button id="shareAllButton" type="button" class="button-secondary icon-button">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M14 3l6 6-1.4 1.4-3.6-3.6V15h-2V6.8l-3.6 3.6L8 9z"></path>
+                  <path d="M5 11h2v8h10v-8h2v10H5z"></path>
+                </svg>
+              </span>
+              <span>전체 공유</span>
+            </button>
+          </div>
         </div>
         <div id="cards" class="cards"></div>
       </section>
@@ -52,8 +74,24 @@
         </div>
         <div class="balls"></div>
         <div class="card-actions">
-          <button type="button" class="button-secondary card-copy">번호 복사</button>
-          <button type="button" class="button-secondary card-share">번호 공유</button>
+          <button type="button" class="button-secondary card-copy icon-button">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M9 9h10v11H9z"></path>
+                <path d="M5 5h10v2H7v8H5z"></path>
+              </svg>
+            </span>
+            <span>번호 복사</span>
+          </button>
+          <button type="button" class="button-secondary card-share icon-button">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M14 3l6 6-1.4 1.4-3.6-3.6V15h-2V6.8l-3.6 3.6L8 9z"></path>
+                <path d="M5 11h2v8h10v-8h2v10H5z"></path>
+              </svg>
+            </span>
+            <span>번호 공유</span>
+          </button>
         </div>
       </article>
     </template>
