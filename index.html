@@ -1,101 +1,159 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>로또번호추천</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#11261f" />
+    <title>ISMS-P Study Deck</title>
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div class="bg-orb bg-orb-left"></div>
-    <div class="bg-orb bg-orb-right"></div>
+    <header class="topbar">
+      <a class="brand" href="#overview" aria-label="ISMS-P Study Deck 홈">
+        <span class="brand-mark">IP</span>
+        <span><strong>ISMS-P</strong><small>STUDY DECK</small></span>
+      </a>
+      <nav aria-label="주요 메뉴">
+        <button class="nav-item active" data-view="overview">대시보드</button>
+        <button class="nav-item" data-view="cards">암기카드</button>
+        <button class="nav-item" data-view="criteria">기준 구분</button>
+        <button class="nav-item" data-view="quiz">문제은행</button>
+        <button class="nav-item" data-view="sources">자료실</button>
+      </nav>
+      <button class="icon-button" id="themeToggle" aria-label="테마 전환">◐</button>
+    </header>
 
-    <main class="page">
-      <section class="hero">
-        <div class="hero-copy">
-          <h1>로또번호추천</h1>
-          <p class="intro">
-            가장 많이 나온 숫자 조합 후 랜덤으로 5개 보여줍니다.
-          </p>
+    <main>
+      <section class="view active" id="overview">
+        <div class="hero">
+          <div>
+            <p class="eyebrow">ISMS-P 인증심사원 시험 준비</p>
+            <h1>외우는 것보다,<br /><em>구분하는 힘</em>을 키우세요.</h1>
+            <p class="hero-copy">
+              숫자 암기부터 비슷한 인증기준의 경계, 상황 속 root cause까지.
+              폴더의 학습 자료를 시험 흐름에 맞게 재구성했습니다.
+            </p>
+            <div class="hero-actions">
+              <button class="primary-button" data-go="cards">오늘의 카드 시작</button>
+              <button class="secondary-button" data-go="quiz">문제은행 풀기</button>
+            </div>
+          </div>
+          <div class="hero-orbit" aria-hidden="true">
+            <div class="orbit orbit-a"><span>101</span><small>인증기준</small></div>
+            <div class="orbit orbit-b"><span>50</span><small>문항</small></div>
+            <div class="orbit orbit-c"><span>120</span><small>시험 분</small></div>
+            <div class="core">ISMS<br />+<br />P</div>
+          </div>
         </div>
 
-        <div class="hero-side">
-          <div class="link-grid">
-            <a class="button-link" href="https://www.dhlottery.co.kr/gameResult.do?method=buyLotto" target="_blank" rel="noreferrer">
-              로또 사러가기
-            </a>
-            <a class="button-link" href="https://www.dhlottery.co.kr/lt645/result" target="_blank" rel="noreferrer">
-              추첨결과 보러가기
-            </a>
-          </div>
-          <div class="button-group">
-            <button id="refreshButton" type="button">번호 다시 만들기</button>
-          </div>
+        <div class="dashboard-grid">
+          <article class="panel progress-panel">
+            <div class="panel-heading">
+              <div><span class="label">학습 현황</span><h2>오늘도 한 장씩</h2></div>
+              <span class="date-chip" id="todayLabel"></span>
+            </div>
+            <div class="progress-main">
+              <div class="ring" id="progressRing"><strong id="progressPercent">0%</strong><span>완료</span></div>
+              <div class="progress-stats">
+                <p><strong id="learnedCount">0</strong><span>학습 완료</span></p>
+                <p><strong id="savedCount">0</strong><span>북마크</span></p>
+                <p><strong id="quizBest">0</strong><span>퀴즈 최고점</span></p>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel number-panel">
+            <div class="panel-heading">
+              <div><span class="label">숫자 묶음</span><h2>오늘의 숫자</h2></div>
+              <button class="text-button" data-go="cards" data-filter-go="숫자">전체 보기 →</button>
+            </div>
+            <div class="number-strip">
+              <div><strong>40 + 60</strong><span>보완 + 재조치</span></div>
+              <div><strong>15일</strong><span>이의신청</span></div>
+              <div><strong>3개월 전</strong><span>갱신 신청</span></div>
+              <div><strong>72시간</strong><span>유출 통지</span></div>
+            </div>
+          </article>
+
+          <article class="panel tip-panel">
+            <span class="label">시험 판단 공식</span>
+            <blockquote>“결함이 겹치면 가장 근본적인 원인, 인과관계가 없으면 가장 정확한 기준.”</blockquote>
+            <div class="formula"><span>ROOT CAUSE</span><b>→</b><span>BEST FIT</span></div>
+          </article>
+
+          <article class="panel map-panel">
+            <div class="panel-heading">
+              <div><span class="label">인증기준 지도</span><h2>101개 기준의 구조</h2></div>
+            </div>
+            <div class="criteria-map">
+              <button data-go="criteria" data-criteria-go="관리체계"><strong>16</strong><span>1. 관리체계 수립 및 운영</span></button>
+              <button data-go="criteria" data-criteria-go="보호대책"><strong>64</strong><span>2. 보호대책 요구사항</span></button>
+              <button data-go="criteria" data-criteria-go="개인정보"><strong>21</strong><span>3. 개인정보 처리단계별</span></button>
+            </div>
+          </article>
         </div>
       </section>
 
-      <section class="panel">
-        <div class="panel-head">
-          <div>
-            <p class="section-kicker">Random 5 Picks</p>
-            <h2>추천 번호</h2>
-          </div>
-          <div class="panel-actions">
-            <button id="copyAllButton" type="button" class="button-secondary icon-button">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M9 9h10v11H9z"></path>
-                  <path d="M5 5h10v2H7v8H5z"></path>
-                </svg>
-              </span>
-              <span>전체 복사</span>
-            </button>
-            <button id="shareAllButton" type="button" class="button-secondary icon-button">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M14 3l6 6-1.4 1.4-3.6-3.6V15h-2V6.8l-3.6 3.6L8 9z"></path>
-                  <path d="M5 11h2v8h10v-8h2v10H5z"></path>
-                </svg>
-              </span>
-              <span>전체 공유</span>
-            </button>
-          </div>
+      <section class="view" id="cards">
+        <div class="section-heading">
+          <div><p class="eyebrow">FLASH CARDS</p><h1>핵심 암기카드</h1><p>카드를 눌러 답을 확인하고, 확실히 알면 완료로 표시하세요.</p></div>
+          <div class="section-count"><strong id="cardVisibleCount">0</strong><span>cards</span></div>
         </div>
-        <div id="cards" class="cards"></div>
+        <div class="toolbar">
+          <label class="search-box"><span>⌕</span><input id="cardSearch" type="search" placeholder="키워드 또는 숫자 검색" /></label>
+          <div class="filter-group" id="cardFilters"></div>
+          <button class="filter-button" id="savedOnly">☆ 북마크</button>
+        </div>
+        <div class="card-grid" id="cardGrid"></div>
+      </section>
+
+      <section class="view" id="criteria">
+        <div class="section-heading">
+          <div><p class="eyebrow">DISTINGUISH</p><h1>헷갈리는 기준 구분</h1><p>제목이 비슷해도 결함의 원인과 초점은 다릅니다.</p></div>
+          <div class="section-count"><strong id="criteriaCount">0</strong><span>pairs</span></div>
+        </div>
+        <div class="toolbar">
+          <label class="search-box"><span>⌕</span><input id="criteriaSearch" type="search" placeholder="기준 번호 또는 상황 검색" /></label>
+          <div class="filter-group" id="criteriaFilters"></div>
+        </div>
+        <div class="comparison-list" id="comparisonList"></div>
+      </section>
+
+      <section class="view" id="quiz">
+        <div class="section-heading">
+          <div><p class="eyebrow">QUESTION BANK</p><h1>문제은행</h1><p>단순질의, 복합응용, 상황판단을 유형별로 풀거나 모의시험에 도전하세요.</p></div>
+          <div class="quiz-score"><span>현재 점수</span><strong><b id="currentScore">0</b> / <b id="quizTotal">0</b></strong></div>
+        </div>
+        <div class="quiz-modes" id="quizModes"></div>
+        <div class="quiz-shell">
+          <div class="quiz-progress"><span id="quizStep"></span><i id="quizBar"></i></div>
+          <article class="quiz-card">
+            <div class="quiz-meta"><span>CASE <b id="quizNumber">01</b></span><span id="quizTag"></span></div>
+            <h2 id="quizQuestion"></h2>
+            <div class="quiz-options" id="quizOptions"></div>
+            <div class="quiz-explanation" id="quizExplanation"></div>
+            <div class="quiz-actions">
+              <button class="secondary-button" id="quizReset">처음부터</button>
+              <button class="secondary-button" id="quizShuffle">문제 섞기</button>
+              <button class="primary-button" id="quizNext">다음 문제</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="sources">
+        <div class="section-heading">
+          <div><p class="eyebrow">SOURCE LIBRARY</p><h1>자료실</h1><p>이 페이지를 구성할 때 우선 참고한 로컬 원문입니다.</p></div>
+        </div>
+        <div class="source-grid" id="sourceGrid"></div>
+        <aside class="notice">
+          <strong>학습 시 유의사항</strong>
+          <p>법령 파일에는 미래 시행 예정 조문도 포함되어 있습니다. 실제 시험은 자격검정 공고일 기준 시행 법령으로 출제되므로 시험 공고와 시행일을 마지막에 반드시 대조하세요.</p>
+        </aside>
       </section>
     </main>
 
-    <div class="toast" id="toast" aria-live="polite"></div>
-
-    <template id="cardTemplate">
-      <article class="card">
-        <div class="card-head">
-          <span class="rank"></span>
-        </div>
-        <div class="balls"></div>
-        <div class="card-actions">
-          <button type="button" class="button-secondary card-copy icon-button">
-            <span class="icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" focusable="false">
-                <path d="M9 9h10v11H9z"></path>
-                <path d="M5 5h10v2H7v8H5z"></path>
-              </svg>
-            </span>
-            <span>번호 복사</span>
-          </button>
-          <button type="button" class="button-secondary card-share icon-button">
-            <span class="icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" focusable="false">
-                <path d="M14 3l6 6-1.4 1.4-3.6-3.6V15h-2V6.8l-3.6 3.6L8 9z"></path>
-                <path d="M5 11h2v8h10v-8h2v10H5z"></path>
-              </svg>
-            </span>
-            <span>번호 공유</span>
-          </button>
-        </div>
-      </article>
-    </template>
-
+    <footer><span>ISMS-P Study Deck</span><span>정적 페이지 · 로그인 없음 · 진행상태는 이 브라우저에만 저장</span></footer>
     <script src="./app.js"></script>
   </body>
 </html>
