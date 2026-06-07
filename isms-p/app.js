@@ -210,51 +210,77 @@ const quiz = [
   {type:"상황판단",tag:"사고대응",q:"글로벌 클라우드 시스템이 UTC를 사용하는 사실을 담당자가 인지하지 못해 사고 시각을 잘못 판단하고 신고가 지연되었다.",options:["2.9.6 시간 동기화","2.11.1 사고 예방 및 대응체계 구축","1.4.1 법적 요구사항 준수 검토","2.9.3 백업 및 복구관리"],answer:1,why:"UTC 사용 자체는 결함이 아닐 수 있으며, 이를 고려하지 못한 사고 대응체계가 핵심입니다."}
 ];
 
-function buildOptions(card, index) {
-  const sameCategory = flashcards.filter(other => other.cat === card.cat && other.id !== card.id && other.a !== card.a);
-  const candidates = [...sameCategory, ...flashcards.filter(other => other.id !== card.id && other.a !== card.a)];
+function criterionOptions(criterion, index) {
+  const area = criterion.code.split(".")[0];
+  const candidates = scenarioCriteria.filter(item => item.code !== criterion.code && item.code.startsWith(`${area}.`));
+  const fallback = scenarioCriteria.filter(item => item.code !== criterion.code);
+  const pool = [...candidates, ...fallback];
   const distractors = [];
-  for (let offset = 0; distractors.length < 4 && offset < candidates.length; offset++) {
-    const answer = candidates[(index * 7 + offset * 11) % candidates.length].a;
-    if (!distractors.includes(answer)) distractors.push(answer);
+  for (let offset = 0; distractors.length < 4; offset++) {
+    const item = pool[(index * 7 + offset * 13) % pool.length];
+    const label = `${item.code} ${item.name}`;
+    if (!distractors.includes(label)) distractors.push(label);
   }
-  const answerPosition = index % 5;
+  const answer = index % 5;
   const options = [...distractors];
-  options.splice(answerPosition, 0, card.a);
-  return {options, answer:answerPosition};
+  options.splice(answer, 0, `${criterion.code} ${criterion.name}`);
+  return {options, answer};
 }
 
-const generatedQuiz = Array.from({length:440}, (_, index) => {
-  const card = flashcards[index % flashcards.length];
-  const variant = Math.floor(index / flashcards.length);
-  const type = ["단순질의","복합응용","상황판단"][index % 3];
-  const context = ["최초심사","사후심사","갱신심사"][variant % 3];
-  if (index % 5 === 0) {
-    const correctCards = [0, 13, 29].map(offset => flashcards[(index + offset) % flashcards.length]);
-    const wrongCards = [47, 83].map(offset => flashcards[(index + offset) % flashcards.length]);
-    const statements = [
-      ...correctCards.map(x => x.a),
-      ...wrongCards.map(x => `“${x.note}”는 인증심사 및 법규 검토 대상이 아니므로 별도 관리가 필요하지 않다.`)
-    ];
-    const rotated = statements.map((_, i) => (i + index) % 5);
-    const options = rotated.map(i => statements[i]);
-    const answers = rotated.map((original, position) => original < 3 ? position : -1).filter(x => x >= 0);
-    return {
-      type:"복합응용", tag:`${card.cat}·복수정답`,
-      q:`${context} 준비 중 “${card.note}”와 함께 검토할 다음 설명 중 학습 자료의 내용과 일치하는 것을 모두 고르시오. (정답 ${answers.length}개)`,
-      options, answer:answers,
-      why:`정답 항목:\n${answers.map(i => `• ${options[i]}`).join("\n")}`
-    };
-  }
-  const prompts = {
-    단순질의: variant === 0 ? card.q : `${context} 준비사항으로 “${card.note}”에 관한 설명 중 가장 옳은 것은?`,
-    복합응용: variant === 0 ? `다음 보기 중 “${card.note}”와 가장 관련 있는 설명을 고르시오.` : `${context}에서 다음 사항을 검토할 때 적용해야 할 내용으로 가장 옳은 것은?\n${card.q}`,
-    상황판단: variant === 0 ? `기업 실사 중 “${card.note}”와 관련된 사항을 발견하였다. 가장 적절한 판단은?` : `${context} 중 다음 상황이 확인되었다. 우선 적용할 내용으로 가장 적절한 것은?\n${card.q}`
+function cleanEvidence(criterion) {
+  const cleaned = criterion.evidence
+    .filter(item => !item.includes("제2장") && !item.includes("관 리 체 계") && item.length < 180)
+    .slice(0, 4);
+  const supplements = [
+    `${criterion.code} ${criterion.name} 점검 결과서`,
+    `${criterion.name} 관련 승인 및 검토 기록`,
+    `${criterion.name} 관련 운영 이행 증적`
+  ];
+  return [...new Set([...cleaned, ...supplements])].slice(0, 4);
+}
+
+const organizations = ["온라인 쇼핑몰 A사","금융 플랫폼 B사","클라우드 서비스 C사","공공기관 D","의료기관 E","교육 서비스 F사"];
+const audits = ["최초심사","사후심사","갱신심사","내부감사"];
+const scenarioQuiz = Array.from({length:400}, (_, index) => {
+  const criterion = scenarioCriteria[index % scenarioCriteria.length];
+  const round = Math.floor(index / scenarioCriteria.length);
+  const caseText = criterion.cases[round % criterion.cases.length];
+  const check = criterion.checks[(round + index) % criterion.checks.length];
+  const evidence = cleanEvidence(criterion);
+  const choice = criterionOptions(criterion, index);
+  return {
+    type:"상황판단",
+    tag:`${criterion.code} 사례`,
+    q:`${organizations[index % organizations.length]}의 ${audits[index % audits.length]} 과정에서 다음 사항이 확인되었다.\n\n${caseText}\n\n위 상황에서 결함으로 판단하기에 가장 적절한 인증기준은?`,
+    options:choice.options,
+    answer:choice.answer,
+    why:`정답은 ${criterion.code} ${criterion.name}이다.\n\n주요 확인사항: ${check}\n\n판단근거: ${criterion.requirement}`,
+    evidence,
+    source:`ISMS-P 인증기준 안내서 p.${criterion.page} · 세부점검항목 ${criterion.code}`
   };
-  const choice = buildOptions(card, index);
-  return {type, tag:card.cat, q:prompts[type], options:choice.options, answer:choice.answer, why:`핵심 암기사항: ${card.a}`};
 });
-quiz.push(...generatedQuiz);
+
+const evidenceQuiz = Array.from({length:40}, (_, index) => {
+  const criterion = scenarioCriteria[(index * 5 + 2) % scenarioCriteria.length];
+  const correct = cleanEvidence(criterion).slice(0, 3);
+  const other = scenarioCriteria[(index * 5 + 19) % scenarioCriteria.length];
+  const wrong = cleanEvidence(other).slice(0, 2).map(item => `${item} (타 기준 확인자료)`);
+  const statements = [...correct, ...wrong];
+  const order = statements.map((_, position) => (position + index) % statements.length);
+  const options = order.map(position => statements[position]);
+  const answers = order.map((original, position) => original < correct.length ? position : -1).filter(position => position >= 0);
+  return {
+    type:"복합응용",
+    tag:`${criterion.code} 증적`,
+    q:`${organizations[index % organizations.length]}에서 ${criterion.code} ${criterion.name} 기준을 점검하려 한다. 안내서상 관련 증거자료로 적절한 것을 모두 고르시오. (정답 ${answers.length}개)`,
+    options,
+    answer:answers,
+    why:`${criterion.code} ${criterion.name}의 주요 확인사항:\n${criterion.checks[0]}`,
+    evidence:correct,
+    source:`ISMS-P 인증기준 안내서 p.${criterion.page} · 세부점검항목 ${criterion.code}`
+  };
+});
+quiz.push(...scenarioQuiz, ...evidenceQuiz);
 
 const sources = [
   ["시험개요","출제범위/출제범위.md","출제범위, 50문항, 2시간, 문제유형 정리"],
@@ -371,7 +397,9 @@ function renderQuiz() {
   const multi = Array.isArray(q.answer);
   $("#quizOptions").innerHTML = q.options.map((x,i) => `<button class="quiz-option" data-index="${i}"><b>${multi ? "□" : String.fromCharCode(65+i)+"."}</b> ${x}</button>`).join("");
   $("#quizConfirm").classList.toggle("show", multi);
-  $("#quizExplanation").className = "quiz-explanation"; $("#quizExplanation").innerHTML = `<strong>판단 근거</strong>${q.why}`;
+  const evidence = q.evidence?.length ? `<strong>확인할 증거자료 예시</strong>${q.evidence.map(item => `• ${item}`).join("<br>")}` : "";
+  const source = q.source ? `<span class="quiz-source">${q.source}</span>` : "";
+  $("#quizExplanation").className = "quiz-explanation"; $("#quizExplanation").innerHTML = `<strong>판단 근거</strong>${q.why.replaceAll("\n","<br>")}<br><br>${evidence}${source}`;
   $("#quizNext").classList.remove("show"); $("#quizNext").textContent = state.quizIndex === state.quizSet.length-1 ? "결과 저장" : "다음 문제";
   $$(".quiz-option").forEach(b => b.addEventListener("click", () => {
     if (state.answered) return; state.answered = true;
