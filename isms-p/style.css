@@ -172,9 +172,10 @@ footer { width: min(1440px, 92vw); margin: 0 auto; padding: 24px 0 35px; display
   .nav-item { padding: 9px 8px; font-size: 10px; }.hero { grid-template-columns: 1fr; }.hero-orbit { display: none; }.dashboard-grid { grid-template-columns: 1fr; }.card-grid, .source-grid { grid-template-columns: repeat(2, 1fr); }.quiz-modes { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 640px) {
-  body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  html { scroll-padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+  body { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
   main { width: 100%; }
-  .view { padding: 16px 12px 34px; }
+  .view { padding: 16px 12px calc(120px + env(safe-area-inset-bottom)); }
   .topbar { min-height: calc(58px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 14px 0; }
   .brand-mark { width: 36px; height: 36px; }
   .icon-button { width: 44px; height: 44px; }
@@ -229,5 +230,5 @@ footer { width: min(1440px, 92vw); margin: 0 auto; padding: 24px 0 35px; display
   .quiz-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; }
   .quiz-actions button { min-height: 48px; }
   .quiz-actions .primary-button { grid-column: 1 / -1; width: 100%; margin-left: 0; }
-  footer { width: calc(100% - 24px); padding-bottom: 18px; flex-direction: column; }
+  footer { width: calc(100% - 24px); padding-bottom: calc(100px + env(safe-area-inset-bottom)); flex-direction: column; }
 }
