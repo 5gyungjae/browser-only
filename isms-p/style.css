@@ -224,7 +224,7 @@ footer { width: min(1440px, 92vw); margin: 0 auto; padding: 24px 0 35px; display
   .quiz-shell { margin: 20px auto 0; }
   .quiz-progress { margin-bottom: 18px; }
   .quiz-card { padding: 24px 17px; border-radius: 18px; }
-  .quiz-card h2 { margin: 22px 0; font-size: 20px; line-height: 1.58; letter-spacing: -.035em; }
+  .quiz-card h2 { margin: 22px 0; font-size: 14px; line-height: 1.65; letter-spacing: -.02em; }
   .quiz-option { min-height: 52px; padding: 14px; font-size: 13px; }
   .quiz-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; }
   .quiz-actions button { min-height: 48px; }
