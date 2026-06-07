@@ -64,7 +64,8 @@ main { width: min(1440px, 92vw); margin: 0 auto; }
 @keyframes appear { from { opacity: 0; transform: translateY(8px); } }
 
 .hero { min-height: 410px; padding: 30px 4vw 56px; display: grid; grid-template-columns: 1.25fr .75fr; align-items: center; overflow: hidden; border-radius: 28px; background: var(--green); color: #f4f8f1; position: relative; }
-.hero::after { content: ""; position: absolute; inset: auto -5% -55% 30%; height: 90%; background: radial-gradient(circle, rgba(201,255,99,.23), transparent 62%); }
+.hero::after { content: ""; position: absolute; inset: auto -5% -55% 30%; height: 90%; pointer-events: none; background: radial-gradient(circle, rgba(201,255,99,.23), transparent 62%); }
+.hero > div:first-child { position: relative; z-index: 2; }
 .eyebrow, .label { color: var(--orange); font: 500 11px "DM Mono"; letter-spacing: .13em; text-transform: uppercase; }
 .hero h1 { margin: 16px 0; font-size: clamp(42px, 6vw, 78px); line-height: 1.05; letter-spacing: -.07em; }
 .hero h1 em { color: var(--lime); font-style: normal; }

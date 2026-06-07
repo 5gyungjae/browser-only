@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.5.1";
+const APP_VERSION = "v1.6.1";
 const flashcards = [
   { id:"n01", cat:"숫자", q:"보완조치와 재조치 요구기간은?", a:"보완조치 40일 + 재조치 60일 = 최대 100일", note:"40 + 60 = 100" },
   { id:"n02", cat:"숫자", q:"심사결과 또는 인증취소 처분에 대한 이의신청 기한은?", a:"결과를 통보받은 날부터 15일 이내", note:"이의는 15일" },
@@ -295,11 +295,20 @@ const sources = [
   ["안내서","ISMS-P 인증기준 안내서(2023.11.23).pdf","기준별 주요 확인사항, 결함사례, 증적자료"]
 ];
 
+const shuffle = items => {
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 const state = {
   learned: new Set(JSON.parse(localStorage.getItem("ismsLearned") || "[]")),
   saved: new Set(JSON.parse(localStorage.getItem("ismsSaved") || "[]")),
-  cardFilter: "전체", cardLimit: 30, criteriaFilter: "전체", savedOnly: false,
-  quizMode: "전체", quizSet: quiz, quizIndex: 0, score: 0, answered: false
+  cardFilter: "전체", cardLimit: 30, cardDeck: shuffle(flashcards), criteriaFilter: "전체", savedOnly: false,
+  quizMode: "전체", quizSet: shuffle(quiz), quizIndex: 0, score: 0, answered: false
 };
 const $ = (s, root=document) => root.querySelector(s);
 const $$ = (s, root=document) => [...root.querySelectorAll(s)];
@@ -328,7 +337,7 @@ function filterButtons(el, items, current, onClick) {
 
 function renderCards() {
   const term = $("#cardSearch").value.trim().toLowerCase();
-  const items = flashcards.filter(c => (state.cardFilter === "전체" || c.cat === state.cardFilter) && (!state.savedOnly || state.saved.has(c.id)) && `${c.q} ${c.a} ${c.note}`.toLowerCase().includes(term));
+  const items = state.cardDeck.filter(c => (state.cardFilter === "전체" || c.cat === state.cardFilter) && (!state.savedOnly || state.saved.has(c.id)) && `${c.q} ${c.a} ${c.note}`.toLowerCase().includes(term));
   const visibleItems = items.slice(0, state.cardLimit);
   filterButtons($("#cardFilters"), ["전체","숫자","인증제도","개인정보","기술","판단"], state.cardFilter, v => { state.cardFilter=v; state.cardLimit=30; renderCards(); });
   $("#savedOnly").classList.toggle("active", state.savedOnly);
@@ -375,10 +384,10 @@ function renderCriteria() {
     <div class="comparison-body">${[c.a,c.b].map(x => `<section class="criterion"><b>${x[0]}</b><h3>${x[1]}</h3><p>${x[2]}</p><div class="cue">판단 단서 · ${x[3]}</div></section>`).join("")}</div></article>`).join("") : `<div class="empty">조건에 맞는 비교 기준이 없습니다.</div>`;
 }
 
-const shuffle = items => [...items].sort(() => Math.random() - .5);
 function startQuiz(mode) {
   state.quizMode = mode;
-  state.quizSet = mode === "모의시험" ? shuffle(quiz).slice(0, 50) : mode === "전체" ? quiz : quiz.filter(q => q.type === mode);
+  const pool = mode === "전체" || mode === "모의시험" ? quiz : quiz.filter(q => q.type === mode);
+  state.quizSet = shuffle(pool).slice(0, mode === "모의시험" ? 50 : pool.length);
   state.quizIndex = 0; state.score = 0; state.answered = false;
   renderQuizModes(); renderQuiz();
 }
