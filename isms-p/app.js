@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.5.0";
+const APP_VERSION = "v1.5.1";
 const flashcards = [
   { id:"n01", cat:"숫자", q:"보완조치와 재조치 요구기간은?", a:"보완조치 40일 + 재조치 60일 = 최대 100일", note:"40 + 60 = 100" },
   { id:"n02", cat:"숫자", q:"심사결과 또는 인증취소 처분에 대한 이의신청 기한은?", a:"결과를 통보받은 날부터 15일 이내", note:"이의는 15일" },
@@ -359,6 +359,7 @@ function renderCards() {
     $(".learn-button", card).addEventListener("click", e => {
       e.stopPropagation(); const id=card.dataset.id; state.learned.has(id)?state.learned.delete(id):state.learned.add(id);
       e.currentTarget.classList.toggle("done", state.learned.has(id)); e.currentTarget.textContent=state.learned.has(id)?"완료 취소":"학습 완료";
+      e.currentTarget.blur();
       persist();
     });
   });

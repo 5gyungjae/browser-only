@@ -37,7 +37,7 @@ body {
 }
 button, input { font: inherit; }
 button { color: inherit; cursor: pointer; }
-button, a { -webkit-tap-highlight-color: transparent; }
+button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
 .topbar {
   position: sticky; top: 0; z-index: 20;
@@ -211,7 +211,7 @@ footer { width: min(1440px, 92vw); margin: 0 auto; padding: 24px 0 35px; display
   .study-card.flipped .card-back { display: flex; }
   .card-face h3 { font-size: 25px; }
   .save-button { min-width: 44px; min-height: 44px; }
-  .learn-button { min-height: 44px; padding: 8px 14px; }
+  .learn-button { min-height: 48px; padding: 9px 16px; font-size: 16px; }
   .load-more { width: 100%; min-height: 50px; margin-top: 14px; }
   .comparison-body { grid-template-columns: 1fr; }
   .criterion + .criterion { border-left: 0; border-top: 1px solid var(--line); }
