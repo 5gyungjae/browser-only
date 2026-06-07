@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.6.3";
+const APP_VERSION = "v1.7.0";
 const flashcards = [
   { id:"n01", cat:"숫자", q:"보완조치와 재조치 요구기간은?", a:"보완조치 40일 + 재조치 60일 = 최대 100일", note:"40 + 60 = 100" },
   { id:"n02", cat:"숫자", q:"심사결과 또는 인증취소 처분에 대한 이의신청 기한은?", a:"결과를 통보받은 날부터 15일 이내", note:"이의는 15일" },
@@ -304,23 +304,53 @@ const shuffle = items => {
   return shuffled;
 };
 
+const readSavedState = () => {
+  try { return JSON.parse(localStorage.getItem("ismsAppState") || "{}"); }
+  catch { return {}; }
+};
+const savedState = readSavedState();
+const restoreOrder = (items, order, allowSubset = false) => {
+  if (!Array.isArray(order) || !order.length || (!allowSubset && order.length !== items.length)) return shuffle(items);
+  const restored = order.map(index => items[index]);
+  return restored.every(Boolean) && new Set(order).size === order.length ? restored : shuffle(items);
+};
+const savedQuizSet = restoreOrder(quiz, savedState.quizOrder, true);
+
 const state = {
   learned: new Set(JSON.parse(localStorage.getItem("ismsLearned") || "[]")),
   saved: new Set(JSON.parse(localStorage.getItem("ismsSaved") || "[]")),
-  cardFilter: "전체", cardLimit: 30, cardDeck: shuffle(flashcards), criteriaFilter: "전체", savedOnly: false,
-  quizMode: "전체", quizSet: shuffle(quiz), quizIndex: 0, score: 0, answered: false
+  cardFilter: savedState.cardFilter || "전체", cardLimit: savedState.cardLimit || 30,
+  cardDeck: restoreOrder(flashcards, savedState.cardOrder), criteriaFilter: savedState.criteriaFilter || "전체", savedOnly: !!savedState.savedOnly,
+  quizMode: savedState.quizMode || "전체", quizSet: savedQuizSet,
+  quizIndex: Math.min(savedState.quizIndex || 0, savedQuizSet.length - 1), score: savedState.score || 0,
+  answered: !!savedState.answered, quizSelected: new Set(savedState.quizSelected || []),
+  activeView: ["overview","cards","criteria","quiz","sources"].includes(savedState.activeView) ? savedState.activeView : "overview"
 };
 const $ = (s, root=document) => root.querySelector(s);
 const $$ = (s, root=document) => [...root.querySelectorAll(s)];
+const persistAppState = () => {
+  localStorage.setItem("ismsAppState", JSON.stringify({
+    activeView: state.activeView,
+    cardFilter: state.cardFilter, cardLimit: state.cardLimit, savedOnly: state.savedOnly,
+    criteriaFilter: state.criteriaFilter,
+    cardOrder: state.cardDeck.map(card => flashcards.indexOf(card)),
+    quizMode: state.quizMode, quizOrder: state.quizSet.map(question => quiz.indexOf(question)),
+    quizIndex: state.quizIndex, score: state.score, answered: state.answered,
+    quizSelected: [...state.quizSelected]
+  }));
+};
 const persist = () => {
   localStorage.setItem("ismsLearned", JSON.stringify([...state.learned]));
   localStorage.setItem("ismsSaved", JSON.stringify([...state.saved]));
+  persistAppState();
   updateDashboard();
 };
 
 function switchView(id) {
+  state.activeView = id;
   $$(".view").forEach(v => v.classList.toggle("active", v.id === id));
   $$(".nav-item").forEach(v => v.classList.toggle("active", v.dataset.view === id));
+  persistAppState();
   window.scrollTo({top:0, behavior:"smooth"});
 }
 $$("[data-view]").forEach(b => b.addEventListener("click", () => switchView(b.dataset.view)));
@@ -339,7 +369,7 @@ function renderCards() {
   const term = $("#cardSearch").value.trim().toLowerCase();
   const items = state.cardDeck.filter(c => (state.cardFilter === "전체" || c.cat === state.cardFilter) && (!state.savedOnly || state.saved.has(c.id)) && `${c.q} ${c.a} ${c.note}`.toLowerCase().includes(term));
   const visibleItems = items.slice(0, state.cardLimit);
-  filterButtons($("#cardFilters"), ["전체","숫자","인증제도","개인정보","기술","판단"], state.cardFilter, v => { state.cardFilter=v; state.cardLimit=30; renderCards(); });
+  filterButtons($("#cardFilters"), ["전체","숫자","인증제도","개인정보","기술","판단"], state.cardFilter, v => { state.cardFilter=v; state.cardLimit=30; persistAppState(); renderCards(); });
   $("#savedOnly").classList.toggle("active", state.savedOnly);
   $("#cardVisibleCount").textContent = items.length;
   $("#cardLoadMore").hidden = visibleItems.length >= items.length;
@@ -377,7 +407,7 @@ function renderCards() {
 function renderCriteria() {
   const term = $("#criteriaSearch").value.trim().toLowerCase();
   const items = comparisons.filter(c => (state.criteriaFilter==="전체" || c.cat===state.criteriaFilter) && JSON.stringify(c).toLowerCase().includes(term));
-  filterButtons($("#criteriaFilters"), ["전체","관리체계","보호대책","개인정보"], state.criteriaFilter, v => { state.criteriaFilter=v; renderCriteria(); });
+  filterButtons($("#criteriaFilters"), ["전체","관리체계","보호대책","개인정보"], state.criteriaFilter, v => { state.criteriaFilter=v; persistAppState(); renderCriteria(); });
   $("#criteriaCount").textContent = items.length;
   $("#comparisonList").innerHTML = items.length ? items.map(c => `
     <article class="comparison"><header class="comparison-head"><div><span class="tag">${c.cat}</span><p>${c.title}</p></div><small>VS</small></header>
@@ -388,7 +418,8 @@ function startQuiz(mode) {
   state.quizMode = mode;
   const pool = mode === "전체" || mode === "모의시험" ? quiz : quiz.filter(q => q.type === mode);
   state.quizSet = shuffle(pool).slice(0, mode === "모의시험" ? 50 : pool.length);
-  state.quizIndex = 0; state.score = 0; state.answered = false;
+  state.quizIndex = 0; state.score = 0; state.answered = false; state.quizSelected = new Set();
+  persistAppState();
   renderQuizModes(); renderQuiz();
 }
 function renderQuizModes() {
@@ -399,8 +430,6 @@ function renderQuizModes() {
 }
 function renderQuiz() {
   const q = state.quizSet[state.quizIndex];
-  state.answered = false;
-  state.quizSelected = new Set();
   $("#quizTotal").textContent = state.quizSet.length; $("#currentScore").textContent = state.score;
   $("#quizNumber").textContent = String(state.quizIndex+1).padStart(2,"0"); $("#quizTag").textContent = `${q.type} · ${q.tag}`;
   $("#quizQuestion").textContent = q.q; $("#quizStep").textContent = `${state.quizMode} · ${state.quizIndex+1} / ${state.quizSet.length}`;
@@ -420,20 +449,28 @@ function renderQuiz() {
       state.quizSelected.has(picked) ? state.quizSelected.delete(picked) : state.quizSelected.add(picked);
       b.classList.toggle("selected", state.quizSelected.has(picked));
       b.querySelector("b").textContent = state.quizSelected.has(picked) ? "■" : "□";
+      persistAppState();
       return;
     }
     if (picked === q.answer) state.score++;
     finishQuizAnswer(q, new Set([picked]));
   }));
+  if (state.answered) showQuizAnswer(q, state.quizSelected);
+}
+function showQuizAnswer(q, picked) {
+  const answers = new Set(Array.isArray(q.answer) ? q.answer : [q.answer]);
+  $$(".quiz-option").forEach((o,i) => { o.disabled=true; if(answers.has(i))o.classList.add("correct"); else if(picked.has(i))o.classList.add("wrong"); });
+  $("#quizConfirm").classList.remove("show");
+  $("#currentScore").textContent = state.score; $("#quizExplanation").classList.add("show"); $("#quizNext").classList.add("show");
 }
 function finishQuizAnswer(q, picked) {
   const answers = new Set(Array.isArray(q.answer) ? q.answer : [q.answer]);
   const correct = picked.size === answers.size && [...picked].every(i => answers.has(i));
   if (Array.isArray(q.answer) && correct) state.score++;
   state.answered = true;
-  $$(".quiz-option").forEach((o,i) => { o.disabled=true; if(answers.has(i))o.classList.add("correct"); else if(picked.has(i))o.classList.add("wrong"); });
-  $("#quizConfirm").classList.remove("show");
-  $("#currentScore").textContent = state.score; $("#quizExplanation").classList.add("show"); $("#quizNext").classList.add("show");
+  state.quizSelected = new Set(picked);
+  showQuizAnswer(q, picked);
+  persistAppState();
 }
 $("#quizConfirm").addEventListener("click", () => {
   if (!state.quizSelected.size || state.answered) return;
@@ -448,12 +485,14 @@ $("#quizNext").addEventListener("click", () => {
     alert(`${state.quizMode} 완료: ${state.score} / ${state.quizSet.length} (${percent}점)`);
     state.quizIndex=0; state.score=0;
   } else state.quizIndex++;
+  state.answered=false; state.quizSelected=new Set();
+  persistAppState();
   renderQuiz();
 });
-$("#quizReset").addEventListener("click", () => { state.quizIndex=0; state.score=0; renderQuiz(); });
+$("#quizReset").addEventListener("click", () => { state.quizIndex=0; state.score=0; state.answered=false; state.quizSelected=new Set(); persistAppState(); renderQuiz(); });
 $("#quizShuffle").addEventListener("click", () => {
   state.quizSet = shuffle(state.quizMode === "모의시험" ? quiz : state.quizSet).slice(0, state.quizMode === "모의시험" ? 50 : state.quizSet.length);
-  state.quizIndex=0; state.score=0; renderQuiz();
+  state.quizIndex=0; state.score=0; state.answered=false; state.quizSelected=new Set(); persistAppState(); renderQuiz();
 });
 
 function renderSources() {
@@ -465,12 +504,12 @@ function updateDashboard() {
   $("#learnedCount").textContent=state.learned.size; $("#savedCount").textContent=state.saved.size; $("#quizBest").textContent=`${localStorage.getItem("ismsQuizBest") || 0}%`;
 }
 
-$("#cardSearch").addEventListener("input", () => { state.cardLimit=30; renderCards(); });
+$("#cardSearch").addEventListener("input", () => { state.cardLimit=30; persistAppState(); renderCards(); });
 $("#criteriaSearch").addEventListener("input", renderCriteria);
-$("#savedOnly").addEventListener("click", () => { state.savedOnly=!state.savedOnly; state.cardLimit=30; renderCards(); });
-$("#cardLoadMore").addEventListener("click", () => { state.cardLimit+=30; renderCards(); });
+$("#savedOnly").addEventListener("click", () => { state.savedOnly=!state.savedOnly; state.cardLimit=30; persistAppState(); renderCards(); });
+$("#cardLoadMore").addEventListener("click", () => { state.cardLimit+=30; persistAppState(); renderCards(); });
 $("#themeToggle").addEventListener("click", () => { document.body.classList.toggle("dark"); localStorage.setItem("ismsTheme", document.body.classList.contains("dark")?"dark":"light"); });
 if (localStorage.getItem("ismsTheme")==="dark") document.body.classList.add("dark");
 $("#versionBadge").textContent = APP_VERSION;
 $("#todayLabel").textContent = new Intl.DateTimeFormat("ko-KR",{month:"long",day:"numeric",weekday:"short"}).format(new Date());
-renderCards(); renderCriteria(); renderQuizModes(); renderQuiz(); renderSources(); updateDashboard();
+renderCards(); renderCriteria(); renderQuizModes(); renderQuiz(); renderSources(); updateDashboard(); switchView(state.activeView);

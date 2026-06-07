@@ -158,7 +158,7 @@ main { width: min(1440px, 92vw); margin: 0 auto; }
 .quiz-confirm { display: none; width: 100%; min-height: 48px; margin-top: 12px; }.quiz-confirm.show { display: block; }
 .quiz-explanation { display: none; margin-top: 20px; padding: 15px; border-radius: 13px; background: var(--surface-2); color: var(--muted); font-size: 12px; }.quiz-explanation.show { display: block; animation: appear .25s; }.quiz-explanation strong { color: var(--ink); display: block; margin-bottom: 5px; }
 .quiz-source { display: block; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); color: var(--orange); font: 500 9px/1.5 "DM Mono"; }
-.quiz-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 28px; }.quiz-actions .primary-button { margin-left: auto; visibility: hidden; }.quiz-actions .primary-button.show { visibility: visible; }
+.quiz-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 28px; }.quiz-actions .primary-button { margin-right: auto; visibility: hidden; }.quiz-actions .primary-button.show { visibility: visible; }
 
 .source-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 28px; }
 .source-card { padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
@@ -172,14 +172,14 @@ footer { width: min(1440px, 92vw); margin: 0 auto; padding: 24px 0 35px; display
   .nav-item { padding: 9px 8px; font-size: 10px; }.hero { grid-template-columns: 1fr; }.hero-orbit { display: none; }.dashboard-grid { grid-template-columns: 1fr; }.card-grid, .source-grid { grid-template-columns: repeat(2, 1fr); }.quiz-modes { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 640px) {
-  html { scroll-padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
-  body { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
+  html { scroll-padding-bottom: 0; }
+  body { padding-bottom: 0; }
   main { width: 100%; }
-  .view { padding: 16px 12px calc(120px + env(safe-area-inset-bottom)); }
-  .topbar { min-height: calc(58px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 14px 0; }
+  .view { padding: 16px 12px 34px; }
+  .topbar { position: static; min-height: calc(58px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 14px 8px; flex-wrap: wrap; gap: 4px 10px; }
   .brand-mark { width: 36px; height: 36px; }
   .icon-button { width: 44px; height: 44px; }
-  .topbar nav { left: 10px; right: 10px; bottom: calc(8px + env(safe-area-inset-bottom)); min-height: 56px; padding: 5px; border-radius: 20px; }
+  .topbar nav { position: static; order: 3; width: 100%; min-height: 48px; padding: 4px; border-radius: 14px; box-shadow: none; }
   .nav-item { min-height: 44px; padding: 7px 6px; }
   .hero { padding: 30px 22px; min-height: auto; border-radius: 22px; }
   .hero h1 { margin: 13px 0; font-size: 41px; line-height: 1.08; }
@@ -229,6 +229,6 @@ footer { width: min(1440px, 92vw); margin: 0 auto; padding: 24px 0 35px; display
   .quiz-option { min-height: 52px; padding: 14px; font-size: 13px; }
   .quiz-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; }
   .quiz-actions button { min-height: 48px; }
-  .quiz-actions .primary-button { grid-column: 1 / -1; width: 100%; margin-left: 0; }
-  footer { width: calc(100% - 24px); padding-bottom: calc(100px + env(safe-area-inset-bottom)); flex-direction: column; }
+  .quiz-actions .primary-button { grid-column: 1 / -1; grid-row: 1; width: 100%; margin-right: 0; }
+  footer { width: calc(100% - 24px); padding-bottom: 18px; flex-direction: column; }
 }
