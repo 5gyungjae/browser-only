@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#11261f" />
     <title>ISMS-P Study Deck</title>
-    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./style.css?v=20260607-3" />
   </head>
   <body>
     <header class="topbar">
@@ -105,6 +105,7 @@
           <button class="filter-button" id="savedOnly">☆ 북마크</button>
         </div>
         <div class="card-grid" id="cardGrid"></div>
+        <button class="secondary-button load-more" id="cardLoadMore">카드 더 보기</button>
       </section>
 
       <section class="view" id="criteria">
@@ -131,6 +132,7 @@
             <div class="quiz-meta"><span>CASE <b id="quizNumber">01</b></span><span id="quizTag"></span></div>
             <h2 id="quizQuestion"></h2>
             <div class="quiz-options" id="quizOptions"></div>
+            <button class="primary-button quiz-confirm" id="quizConfirm">선택한 답 확인</button>
             <div class="quiz-explanation" id="quizExplanation"></div>
             <div class="quiz-actions">
               <button class="secondary-button" id="quizReset">처음부터</button>
@@ -154,6 +156,6 @@
     </main>
 
     <footer><span>ISMS-P Study Deck</span><span>정적 페이지 · 로그인 없음 · 진행상태는 이 브라우저에만 저장</span></footer>
-    <script src="./app.js"></script>
+    <script src="./app.js?v=20260607-3"></script>
   </body>
 </html>

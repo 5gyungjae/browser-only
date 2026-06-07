@@ -214,11 +214,11 @@ function buildOptions(card, index) {
   const sameCategory = flashcards.filter(other => other.cat === card.cat && other.id !== card.id && other.a !== card.a);
   const candidates = [...sameCategory, ...flashcards.filter(other => other.id !== card.id && other.a !== card.a)];
   const distractors = [];
-  for (let offset = 0; distractors.length < 3 && offset < candidates.length; offset++) {
+  for (let offset = 0; distractors.length < 4 && offset < candidates.length; offset++) {
     const answer = candidates[(index * 7 + offset * 11) % candidates.length].a;
     if (!distractors.includes(answer)) distractors.push(answer);
   }
-  const answerPosition = index % 4;
+  const answerPosition = index % 5;
   const options = [...distractors];
   options.splice(answerPosition, 0, card.a);
   return {options, answer:answerPosition};
@@ -228,10 +228,28 @@ const generatedQuiz = Array.from({length:440}, (_, index) => {
   const card = flashcards[index % flashcards.length];
   const variant = Math.floor(index / flashcards.length);
   const type = ["단순질의","복합응용","상황판단"][index % 3];
+  const context = ["최초심사","사후심사","갱신심사"][variant % 3];
+  if (index % 5 === 0) {
+    const correctCards = [0, 13, 29].map(offset => flashcards[(index + offset) % flashcards.length]);
+    const wrongCards = [47, 83].map(offset => flashcards[(index + offset) % flashcards.length]);
+    const statements = [
+      ...correctCards.map(x => x.a),
+      ...wrongCards.map(x => `“${x.note}”는 인증심사 및 법규 검토 대상이 아니므로 별도 관리가 필요하지 않다.`)
+    ];
+    const rotated = statements.map((_, i) => (i + index) % 5);
+    const options = rotated.map(i => statements[i]);
+    const answers = rotated.map((original, position) => original < 3 ? position : -1).filter(x => x >= 0);
+    return {
+      type:"복합응용", tag:`${card.cat}·복수정답`,
+      q:`${context} 준비 중 “${card.note}”와 함께 검토할 다음 설명 중 학습 자료의 내용과 일치하는 것을 모두 고르시오. (정답 ${answers.length}개)`,
+      options, answer:answers,
+      why:`정답 항목:\n${answers.map(i => `• ${options[i]}`).join("\n")}`
+    };
+  }
   const prompts = {
-    단순질의: variant === 0 ? card.q : `다음 중 “${card.note}”에 해당하는 내용으로 가장 적절한 것은?`,
-    복합응용: variant === 0 ? `시험에서 “${card.note}”가 핵심 단서로 제시되었다. 함께 기억해야 할 내용은?` : `다음 설명을 검토할 때 가장 먼저 확인할 핵심 내용은?\n${card.q}`,
-    상황판단: variant === 0 ? `심사 현장에서 “${card.note}”와 관련된 사항이 확인되었다. 가장 적절한 판단은?` : `다음 상황에 적용할 내용으로 가장 적절한 것은?\n${card.q}`
+    단순질의: variant === 0 ? card.q : `${context} 준비사항으로 “${card.note}”에 관한 설명 중 가장 옳은 것은?`,
+    복합응용: variant === 0 ? `다음 보기 중 “${card.note}”와 가장 관련 있는 설명을 고르시오.` : `${context}에서 다음 사항을 검토할 때 적용해야 할 내용으로 가장 옳은 것은?\n${card.q}`,
+    상황판단: variant === 0 ? `기업 실사 중 “${card.note}”와 관련된 사항을 발견하였다. 가장 적절한 판단은?` : `${context} 중 다음 상황이 확인되었다. 우선 적용할 내용으로 가장 적절한 것은?\n${card.q}`
   };
   const choice = buildOptions(card, index);
   return {type, tag:card.cat, q:prompts[type], options:choice.options, answer:choice.answer, why:`핵심 암기사항: ${card.a}`};
@@ -253,7 +271,7 @@ const sources = [
 const state = {
   learned: new Set(JSON.parse(localStorage.getItem("ismsLearned") || "[]")),
   saved: new Set(JSON.parse(localStorage.getItem("ismsSaved") || "[]")),
-  cardFilter: "전체", criteriaFilter: "전체", savedOnly: false,
+  cardFilter: "전체", cardLimit: 30, criteriaFilter: "전체", savedOnly: false,
   quizMode: "전체", quizSet: quiz, quizIndex: 0, score: 0, answered: false
 };
 const $ = (s, root=document) => root.querySelector(s);
@@ -284,10 +302,13 @@ function filterButtons(el, items, current, onClick) {
 function renderCards() {
   const term = $("#cardSearch").value.trim().toLowerCase();
   const items = flashcards.filter(c => (state.cardFilter === "전체" || c.cat === state.cardFilter) && (!state.savedOnly || state.saved.has(c.id)) && `${c.q} ${c.a} ${c.note}`.toLowerCase().includes(term));
-  filterButtons($("#cardFilters"), ["전체","숫자","인증제도","개인정보","기술","판단"], state.cardFilter, v => { state.cardFilter=v; renderCards(); });
+  const visibleItems = items.slice(0, state.cardLimit);
+  filterButtons($("#cardFilters"), ["전체","숫자","인증제도","개인정보","기술","판단"], state.cardFilter, v => { state.cardFilter=v; state.cardLimit=30; renderCards(); });
   $("#savedOnly").classList.toggle("active", state.savedOnly);
   $("#cardVisibleCount").textContent = items.length;
-  $("#cardGrid").innerHTML = items.length ? items.map(c => `
+  $("#cardLoadMore").hidden = visibleItems.length >= items.length;
+  $("#cardLoadMore").textContent = `카드 더 보기 · ${visibleItems.length} / ${items.length}`;
+  $("#cardGrid").innerHTML = items.length ? visibleItems.map(c => `
     <article class="study-card ${state.learned.has(c.id)?"learned":""}" data-id="${c.id}">
       <div class="card-inner">
         <div class="card-face card-front">
@@ -303,8 +324,16 @@ function renderCards() {
     </article>`).join("") : `<div class="empty">조건에 맞는 카드가 없습니다.</div>`;
   $$(".study-card").forEach(card => {
     card.addEventListener("click", e => { if (!e.target.closest("button")) card.classList.toggle("flipped"); });
-    $$(".save-button", card).forEach(b => b.addEventListener("click", e => { e.stopPropagation(); const id=card.dataset.id; state.saved.has(id)?state.saved.delete(id):state.saved.add(id); persist(); renderCards(); }));
-    $(".learn-button", card).addEventListener("click", e => { e.stopPropagation(); const id=card.dataset.id; state.learned.has(id)?state.learned.delete(id):state.learned.add(id); persist(); renderCards(); });
+    $$(".save-button", card).forEach(b => b.addEventListener("click", e => {
+      e.stopPropagation(); const id=card.dataset.id; state.saved.has(id)?state.saved.delete(id):state.saved.add(id);
+      $$(".save-button", card).forEach(button => { button.classList.toggle("active", state.saved.has(id)); button.textContent=state.saved.has(id)?"★":"☆"; });
+      persist();
+    }));
+    $(".learn-button", card).addEventListener("click", e => {
+      e.stopPropagation(); const id=card.dataset.id; state.learned.has(id)?state.learned.delete(id):state.learned.add(id);
+      e.currentTarget.classList.toggle("done", state.learned.has(id)); e.currentTarget.textContent=state.learned.has(id)?"완료 취소":"학습 완료";
+      persist();
+    });
   });
 }
 
@@ -334,20 +363,43 @@ function renderQuizModes() {
 function renderQuiz() {
   const q = state.quizSet[state.quizIndex];
   state.answered = false;
+  state.quizSelected = new Set();
   $("#quizTotal").textContent = state.quizSet.length; $("#currentScore").textContent = state.score;
   $("#quizNumber").textContent = String(state.quizIndex+1).padStart(2,"0"); $("#quizTag").textContent = `${q.type} · ${q.tag}`;
   $("#quizQuestion").textContent = q.q; $("#quizStep").textContent = `${state.quizMode} · ${state.quizIndex+1} / ${state.quizSet.length}`;
   $("#quizBar").style.width = `${((state.quizIndex+1)/state.quizSet.length)*100}%`;
-  $("#quizOptions").innerHTML = q.options.map((x,i) => `<button class="quiz-option" data-index="${i}"><b>${String.fromCharCode(65+i)}.</b> ${x}</button>`).join("");
+  const multi = Array.isArray(q.answer);
+  $("#quizOptions").innerHTML = q.options.map((x,i) => `<button class="quiz-option" data-index="${i}"><b>${multi ? "□" : String.fromCharCode(65+i)+"."}</b> ${x}</button>`).join("");
+  $("#quizConfirm").classList.toggle("show", multi);
   $("#quizExplanation").className = "quiz-explanation"; $("#quizExplanation").innerHTML = `<strong>판단 근거</strong>${q.why}`;
   $("#quizNext").classList.remove("show"); $("#quizNext").textContent = state.quizIndex === state.quizSet.length-1 ? "결과 저장" : "다음 문제";
   $$(".quiz-option").forEach(b => b.addEventListener("click", () => {
     if (state.answered) return; state.answered = true;
-    const picked = +b.dataset.index; if (picked === q.answer) state.score++;
-    $$(".quiz-option").forEach((o,i) => { o.disabled=true; if(i===q.answer)o.classList.add("correct"); else if(i===picked)o.classList.add("wrong"); });
-    $("#currentScore").textContent = state.score; $("#quizExplanation").classList.add("show"); $("#quizNext").classList.add("show");
+    const picked = +b.dataset.index;
+    if (multi) {
+      state.answered = false;
+      state.quizSelected.has(picked) ? state.quizSelected.delete(picked) : state.quizSelected.add(picked);
+      b.classList.toggle("selected", state.quizSelected.has(picked));
+      b.querySelector("b").textContent = state.quizSelected.has(picked) ? "■" : "□";
+      return;
+    }
+    if (picked === q.answer) state.score++;
+    finishQuizAnswer(q, new Set([picked]));
   }));
 }
+function finishQuizAnswer(q, picked) {
+  const answers = new Set(Array.isArray(q.answer) ? q.answer : [q.answer]);
+  const correct = picked.size === answers.size && [...picked].every(i => answers.has(i));
+  if (Array.isArray(q.answer) && correct) state.score++;
+  state.answered = true;
+  $$(".quiz-option").forEach((o,i) => { o.disabled=true; if(answers.has(i))o.classList.add("correct"); else if(picked.has(i))o.classList.add("wrong"); });
+  $("#quizConfirm").classList.remove("show");
+  $("#currentScore").textContent = state.score; $("#quizExplanation").classList.add("show"); $("#quizNext").classList.add("show");
+}
+$("#quizConfirm").addEventListener("click", () => {
+  if (!state.quizSelected.size || state.answered) return;
+  finishQuizAnswer(state.quizSet[state.quizIndex], state.quizSelected);
+});
 $("#quizNext").addEventListener("click", () => {
   if (!state.answered) return;
   if (state.quizIndex === state.quizSet.length-1) {
@@ -374,9 +426,10 @@ function updateDashboard() {
   $("#learnedCount").textContent=state.learned.size; $("#savedCount").textContent=state.saved.size; $("#quizBest").textContent=`${localStorage.getItem("ismsQuizBest") || 0}%`;
 }
 
-$("#cardSearch").addEventListener("input", renderCards);
+$("#cardSearch").addEventListener("input", () => { state.cardLimit=30; renderCards(); });
 $("#criteriaSearch").addEventListener("input", renderCriteria);
-$("#savedOnly").addEventListener("click", () => { state.savedOnly=!state.savedOnly; renderCards(); });
+$("#savedOnly").addEventListener("click", () => { state.savedOnly=!state.savedOnly; state.cardLimit=30; renderCards(); });
+$("#cardLoadMore").addEventListener("click", () => { state.cardLimit+=30; renderCards(); });
 $("#themeToggle").addEventListener("click", () => { document.body.classList.toggle("dark"); localStorage.setItem("ismsTheme", document.body.classList.contains("dark")?"dark":"light"); });
 if (localStorage.getItem("ismsTheme")==="dark") document.body.classList.add("dark");
 $("#todayLabel").textContent = new Intl.DateTimeFormat("ko-KR",{month:"long",day:"numeric",weekday:"short"}).format(new Date());
