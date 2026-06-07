@@ -1,3 +1,4 @@
+const APP_VERSION = "v1.5.0";
 const flashcards = [
   { id:"n01", cat:"숫자", q:"보완조치와 재조치 요구기간은?", a:"보완조치 40일 + 재조치 60일 = 최대 100일", note:"40 + 60 = 100" },
   { id:"n02", cat:"숫자", q:"심사결과 또는 인증취소 처분에 대한 이의신청 기한은?", a:"결과를 통보받은 날부터 15일 이내", note:"이의는 15일" },
@@ -460,5 +461,6 @@ $("#savedOnly").addEventListener("click", () => { state.savedOnly=!state.savedOn
 $("#cardLoadMore").addEventListener("click", () => { state.cardLimit+=30; renderCards(); });
 $("#themeToggle").addEventListener("click", () => { document.body.classList.toggle("dark"); localStorage.setItem("ismsTheme", document.body.classList.contains("dark")?"dark":"light"); });
 if (localStorage.getItem("ismsTheme")==="dark") document.body.classList.add("dark");
+$("#versionBadge").textContent = APP_VERSION;
 $("#todayLabel").textContent = new Intl.DateTimeFormat("ko-KR",{month:"long",day:"numeric",weekday:"short"}).format(new Date());
 renderCards(); renderCriteria(); renderQuizModes(); renderQuiz(); renderSources(); updateDashboard();
