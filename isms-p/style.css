@@ -144,6 +144,24 @@ main { width: min(1440px, 92vw); margin: 0 auto; }
 .criterion b { color: var(--orange); font: 500 12px "DM Mono"; }.criterion h3 { margin: 6px 0 12px; font-size: 19px; }.criterion p { margin: 0; color: var(--muted); font-size: 12px; }
 .criterion .cue { margin-top: 18px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); color: var(--ink); font-size: 11px; }
 
+.wiki-list { display: grid; gap: 16px; }
+.wiki-card { border: 1px solid var(--line); border-radius: 22px; background: var(--surface); padding: 24px; box-shadow: var(--shadow); }
+.wiki-head { display: flex; justify-content: space-between; align-items: start; gap: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.wiki-head h2 { margin: 8px 0 0; font-size: 27px; line-height: 1.25; letter-spacing: -.05em; }
+.wiki-head small { flex: 0 0 auto; color: var(--orange); font: 500 10px "DM Mono"; }
+.wiki-section { margin-top: 20px; }
+.wiki-section h3 { margin: 0 0 9px; font-size: 15px; }
+.wiki-section p, .wiki-section li { color: var(--muted); font-size: 13px; line-height: 1.75; }
+.wiki-section p { margin: 0; }
+.wiki-section ul { margin: 0; padding-left: 18px; }
+.wiki-section li + li { margin-top: 6px; }
+.wiki-section.defect { padding: 18px; border-radius: 16px; background: var(--surface-2); }
+.wiki-section.defect h3 { color: var(--orange); }
+.wiki-pager { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; justify-content: center; align-items: center; gap: 14px; }
+.wiki-pager span { min-width: 64px; text-align: center; color: var(--orange); font: 500 11px "DM Mono"; }
+.wiki-pager .wiki-move { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--ink); font-size: 24px; line-height: 1; }
+.wiki-pager .wiki-move:hover { border-color: var(--orange); color: var(--orange); }
+
 .quiz-score { text-align: right; flex: 0 0 auto; }.quiz-score span { display: block; color: var(--muted); font-size: 10px; }.quiz-score strong { display: block; white-space: nowrap; font: 500 32px "DM Mono"; }
 .quiz-modes { margin: 24px 0 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .quiz-mode { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); padding: 14px; text-align: left; }
@@ -180,7 +198,7 @@ footer { width: min(1440px, 92vw); margin: 0 auto; padding: 24px 0 35px; display
   .brand-mark { width: 36px; height: 36px; }
   .icon-button { width: 44px; height: 44px; }
   .topbar nav { position: static; order: 3; width: 100%; min-height: 48px; padding: 4px; border-radius: 14px; box-shadow: none; }
-  .nav-item { min-height: 44px; padding: 7px 6px; }
+  .nav-item { flex: 1; min-height: 44px; padding: 7px 4px; font-size: 9px; }
   .hero { padding: 30px 22px; min-height: auto; border-radius: 22px; }
   .hero h1 { margin: 13px 0; font-size: 41px; line-height: 1.08; }
   .hero-copy { font-size: 13px; }
@@ -217,6 +235,16 @@ footer { width: min(1440px, 92vw); margin: 0 auto; padding: 24px 0 35px; display
   .load-more { width: 100%; min-height: 50px; margin-top: 14px; }
   .comparison-body { grid-template-columns: 1fr; }
   .criterion + .criterion { border-left: 0; border-top: 1px solid var(--line); }
+  .wiki-list { gap: 12px; }
+  .wiki-card { padding: 18px; border-radius: 18px; }
+  .wiki-head { display: block; padding-bottom: 14px; }
+  .wiki-head h2 { font-size: 21px; }
+  .wiki-head small { display: block; margin-top: 8px; }
+  .wiki-section { margin-top: 16px; }
+  .wiki-section p, .wiki-section li { font-size: 12px; line-height: 1.7; }
+  .wiki-section.defect { padding: 14px; }
+  .wiki-pager { gap: 16px; }
+  .wiki-pager .wiki-move { width: 48px; height: 48px; }
   #quiz .section-heading { padding-bottom: 14px; }
   #quiz .section-heading p:not(.eyebrow) { display: none; }
   .quiz-score strong { font-size: 19px; }

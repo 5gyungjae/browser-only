@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.7.0";
+const APP_VERSION = "v1.9.1";
 const flashcards = [
   { id:"n01", cat:"숫자", q:"보완조치와 재조치 요구기간은?", a:"보완조치 40일 + 재조치 60일 = 최대 100일", note:"40 + 60 = 100" },
   { id:"n02", cat:"숫자", q:"심사결과 또는 인증취소 처분에 대한 이의신청 기한은?", a:"결과를 통보받은 날부터 15일 이내", note:"이의는 15일" },
@@ -315,16 +315,19 @@ const restoreOrder = (items, order, allowSubset = false) => {
   return restored.every(Boolean) && new Set(order).size === order.length ? restored : shuffle(items);
 };
 const savedQuizSet = restoreOrder(quiz, savedState.quizOrder, true);
+const criterionCategory = code => code.startsWith("1.") ? "관리체계" : code.startsWith("2.") ? "보호대책" : "개인정보";
 
 const state = {
   learned: new Set(JSON.parse(localStorage.getItem("ismsLearned") || "[]")),
   saved: new Set(JSON.parse(localStorage.getItem("ismsSaved") || "[]")),
   cardFilter: savedState.cardFilter || "전체", cardLimit: savedState.cardLimit || 30,
-  cardDeck: restoreOrder(flashcards, savedState.cardOrder), criteriaFilter: savedState.criteriaFilter || "전체", savedOnly: !!savedState.savedOnly,
+  cardDeck: restoreOrder(flashcards, savedState.cardOrder), criteriaFilter: savedState.criteriaFilter || "전체",
+  wikiFilter: savedState.wikiFilter || "전체", savedOnly: !!savedState.savedOnly,
   quizMode: savedState.quizMode || "전체", quizSet: savedQuizSet,
   quizIndex: Math.min(savedState.quizIndex || 0, savedQuizSet.length - 1), score: savedState.score || 0,
   answered: !!savedState.answered, quizSelected: new Set(savedState.quizSelected || []),
-  activeView: ["overview","cards","criteria","quiz","sources"].includes(savedState.activeView) ? savedState.activeView : "overview"
+  wikiIndex: savedState.wikiIndex || 0,
+  activeView: ["overview","cards","criteria","wiki","quiz","sources"].includes(savedState.activeView) ? savedState.activeView : "overview"
 };
 const $ = (s, root=document) => root.querySelector(s);
 const $$ = (s, root=document) => [...root.querySelectorAll(s)];
@@ -332,7 +335,7 @@ const persistAppState = () => {
   localStorage.setItem("ismsAppState", JSON.stringify({
     activeView: state.activeView,
     cardFilter: state.cardFilter, cardLimit: state.cardLimit, savedOnly: state.savedOnly,
-    criteriaFilter: state.criteriaFilter,
+    criteriaFilter: state.criteriaFilter, wikiFilter: state.wikiFilter, wikiIndex: state.wikiIndex,
     cardOrder: state.cardDeck.map(card => flashcards.indexOf(card)),
     quizMode: state.quizMode, quizOrder: state.quizSet.map(question => quiz.indexOf(question)),
     quizIndex: state.quizIndex, score: state.score, answered: state.answered,
@@ -357,6 +360,7 @@ $$("[data-view]").forEach(b => b.addEventListener("click", () => switchView(b.da
 $$("[data-go]").forEach(b => b.addEventListener("click", () => {
   if (b.dataset.filterGo) { state.cardFilter = b.dataset.filterGo; renderCards(); }
   if (b.dataset.criteriaGo) { state.criteriaFilter = b.dataset.criteriaGo; renderCriteria(); }
+  if (b.dataset.wikiGo) { state.wikiFilter = b.dataset.wikiGo; state.wikiIndex = 0; renderWiki(); }
   switchView(b.dataset.go);
 }));
 
@@ -412,6 +416,51 @@ function renderCriteria() {
   $("#comparisonList").innerHTML = items.length ? items.map(c => `
     <article class="comparison"><header class="comparison-head"><div><span class="tag">${c.cat}</span><p>${c.title}</p></div><small>VS</small></header>
     <div class="comparison-body">${[c.a,c.b].map(x => `<section class="criterion"><b>${x[0]}</b><h3>${x[1]}</h3><p>${x[2]}</p><div class="cue">판단 단서 · ${x[3]}</div></section>`).join("")}</div></article>`).join("") : `<div class="empty">조건에 맞는 비교 기준이 없습니다.</div>`;
+}
+
+function renderWiki() {
+  const term = $("#wikiSearch").value.trim().toLowerCase();
+  const items = scenarioCriteria.filter(c => {
+    const category = criterionCategory(c.code);
+    return (state.wikiFilter === "전체" || category === state.wikiFilter) && `${c.code} ${c.name} ${c.requirement} ${c.checks.join(" ")} ${c.cases.join(" ")}`.toLowerCase().includes(term);
+  });
+  filterButtons($("#wikiFilters"), ["전체","관리체계","보호대책","개인정보"], state.wikiFilter, v => { state.wikiFilter=v; state.wikiIndex=0; persistAppState(); renderWiki(); });
+  $("#wikiCount").textContent = items.length;
+  state.wikiIndex = Math.min(state.wikiIndex, Math.max(items.length - 1, 0));
+  const c = items[state.wikiIndex];
+  const pager = items.length > 1 ? `
+    <div class="wiki-pager">
+      <button class="wiki-move" data-dir="prev" aria-label="이전 인증항목">‹</button>
+      <span>${state.wikiIndex + 1} / ${items.length}</span>
+      <button class="wiki-move" data-dir="next" aria-label="다음 인증항목">›</button>
+    </div>` : "";
+  $("#wikiList").innerHTML = items.length ? `
+    <article class="wiki-card" id="wiki-${c.code.replaceAll(".","-")}">
+      <header class="wiki-head">
+        <div><span class="tag">${criterionCategory(c.code)}</span><h2>${c.code} ${c.name}</h2></div>
+        <small>안내서 p.${c.page}</small>
+      </header>
+      <section class="wiki-section">
+        <h3>인증항목 설명</h3>
+        <p>${c.requirement}</p>
+      </section>
+      <section class="wiki-section">
+        <h3>주요 확인사항</h3>
+        <ul>${c.checks.map(item => `<li>${item}</li>`).join("")}</ul>
+      </section>
+      <section class="wiki-section defect">
+        <h3>결함사례</h3>
+        <ul>${c.cases.map(item => `<li>${item}</li>`).join("")}</ul>
+      </section>
+      ${pager}
+    </article>
+    ` : `<div class="empty">조건에 맞는 인증항목이 없습니다.</div>`;
+  $$(".wiki-move").forEach(button => button.addEventListener("click", e => {
+    const next = e.currentTarget.dataset.dir === "next" ? state.wikiIndex + 1 : state.wikiIndex - 1;
+    state.wikiIndex = (next + items.length) % items.length;
+    persistAppState();
+    renderWiki();
+  }));
 }
 
 function startQuiz(mode) {
@@ -506,10 +555,11 @@ function updateDashboard() {
 
 $("#cardSearch").addEventListener("input", () => { state.cardLimit=30; persistAppState(); renderCards(); });
 $("#criteriaSearch").addEventListener("input", renderCriteria);
+$("#wikiSearch").addEventListener("input", () => { state.wikiIndex=0; persistAppState(); renderWiki(); });
 $("#savedOnly").addEventListener("click", () => { state.savedOnly=!state.savedOnly; state.cardLimit=30; persistAppState(); renderCards(); });
 $("#cardLoadMore").addEventListener("click", () => { state.cardLimit+=30; persistAppState(); renderCards(); });
 $("#themeToggle").addEventListener("click", () => { document.body.classList.toggle("dark"); localStorage.setItem("ismsTheme", document.body.classList.contains("dark")?"dark":"light"); });
 if (localStorage.getItem("ismsTheme")==="dark") document.body.classList.add("dark");
 $("#versionBadge").textContent = APP_VERSION;
 $("#todayLabel").textContent = new Intl.DateTimeFormat("ko-KR",{month:"long",day:"numeric",weekday:"short"}).format(new Date());
-renderCards(); renderCriteria(); renderQuizModes(); renderQuiz(); renderSources(); updateDashboard(); switchView(state.activeView);
+renderCards(); renderCriteria(); renderWiki(); renderQuizModes(); renderQuiz(); renderSources(); updateDashboard(); switchView(state.activeView);

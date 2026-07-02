@@ -5,18 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#11261f" />
     <title>ISMS-P Study Deck</title>
-    <link rel="stylesheet" href="./style.css?v=1.7.0" />
+    <link rel="stylesheet" href="./style.css?v=1.9.1" />
   </head>
   <body>
     <header class="topbar">
       <a class="brand" href="#overview" aria-label="ISMS-P Study Deck 홈">
         <span class="brand-mark">IP</span>
-        <span><strong>ISMS-P <b class="version-badge" id="versionBadge">v1.7.0</b></strong><small>STUDY DECK</small></span>
+        <span><strong>ISMS-P <b class="version-badge" id="versionBadge">v1.9.1</b></strong><small>STUDY DECK</small></span>
       </a>
       <nav aria-label="주요 메뉴">
         <button class="nav-item active" data-view="overview">대시보드</button>
         <button class="nav-item" data-view="cards">암기카드</button>
         <button class="nav-item" data-view="criteria">기준 구분</button>
+        <button class="nav-item" data-view="wiki">기준위키</button>
         <button class="nav-item" data-view="quiz">문제은행</button>
         <button class="nav-item" data-view="sources">자료실</button>
       </nav>
@@ -86,9 +87,9 @@
               <div><span class="label">인증기준 지도</span><h2>101개 기준의 구조</h2></div>
             </div>
             <div class="criteria-map">
-              <button data-go="criteria" data-criteria-go="관리체계"><strong>16</strong><span>1. 관리체계 수립 및 운영</span></button>
-              <button data-go="criteria" data-criteria-go="보호대책"><strong>64</strong><span>2. 보호대책 요구사항</span></button>
-              <button data-go="criteria" data-criteria-go="개인정보"><strong>21</strong><span>3. 개인정보 처리단계별</span></button>
+              <button data-go="wiki" data-wiki-go="관리체계"><strong>16</strong><span>1. 관리체계 수립 및 운영</span></button>
+              <button data-go="wiki" data-wiki-go="보호대책"><strong>64</strong><span>2. 보호대책 요구사항</span></button>
+              <button data-go="wiki" data-wiki-go="개인정보"><strong>21</strong><span>3. 개인정보 처리단계별</span></button>
             </div>
           </article>
         </div>
@@ -118,6 +119,18 @@
           <div class="filter-group" id="criteriaFilters"></div>
         </div>
         <div class="comparison-list" id="comparisonList"></div>
+      </section>
+
+      <section class="view" id="wiki">
+        <div class="section-heading">
+          <div><p class="eyebrow">CRITERIA WIKI</p><h1>인증항목 위키</h1><p>101개 인증항목의 설명, 주요 확인사항, 결함사례만 따로 모았습니다.</p></div>
+          <div class="section-count"><strong id="wikiCount">0</strong><span>items</span></div>
+        </div>
+        <div class="toolbar">
+          <label class="search-box"><span>⌕</span><input id="wikiSearch" type="search" placeholder="예: 2.9.6, 시간 동기화, 파기" /></label>
+          <div class="filter-group" id="wikiFilters"></div>
+        </div>
+        <div class="wiki-list" id="wikiList"></div>
       </section>
 
       <section class="view" id="quiz">
@@ -156,7 +169,7 @@
     </main>
 
     <footer><span>ISMS-P Study Deck</span><span>정적 페이지 · 로그인 없음 · 진행상태는 이 브라우저에만 저장</span></footer>
-    <script src="./scenario-data.js?v=1.7.0"></script>
-    <script src="./app.js?v=1.7.0"></script>
+    <script src="./scenario-data.js?v=1.9.1"></script>
+    <script src="./app.js?v=1.9.1"></script>
   </body>
 </html>
